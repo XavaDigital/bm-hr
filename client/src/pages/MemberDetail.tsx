@@ -6,6 +6,7 @@ import { api, describeError } from '../api';
 import { MemberForm, type MemberFormValues } from '../components/MemberForm';
 import { CompensationTab } from '../components/CompensationTab';
 import { PayScheduleTab } from '../components/PayScheduleTab';
+import { PayHistoryTab } from '../components/PayHistoryTab';
 import { date, fullName, pay, sinceRelative, tenure } from '../format';
 import { STATUS_LABELS, type MemberDetail, type TeamMember } from '../types';
 
@@ -111,6 +112,11 @@ export function MemberDetailPage() {
             key: 'schedule',
             label: 'Pay schedule',
             children: <PayScheduleTab memberId={m.id} schedule={data.schedule} member={m} onChange={load} />,
+          },
+          {
+            key: 'history',
+            label: 'Pay history',
+            children: <PayHistoryTab memberId={m.id} />,
           },
         ]}
       />

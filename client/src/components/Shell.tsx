@@ -1,5 +1,5 @@
 import { Layout, Menu, Space, Typography, Button } from 'antd';
-import { TeamOutlined, UploadOutlined, LogoutOutlined } from '@ant-design/icons';
+import { TeamOutlined, UploadOutlined, LogoutOutlined, DollarOutlined, SettingOutlined } from '@ant-design/icons';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
@@ -9,7 +9,13 @@ export function Shell() {
   const { user, signOut } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
-  const selected = location.pathname.startsWith('/import') ? 'import' : 'team';
+  const selected = location.pathname.startsWith('/import')
+    ? 'import'
+    : location.pathname.startsWith('/pay-runs')
+      ? 'pay-runs'
+      : location.pathname.startsWith('/settings')
+        ? 'settings'
+        : 'team';
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
@@ -21,7 +27,9 @@ export function Shell() {
           selectedKeys={[selected]}
           items={[
             { key: 'team', icon: <TeamOutlined />, label: <Link to="/team">Team</Link> },
+            { key: 'pay-runs', icon: <DollarOutlined />, label: <Link to="/pay-runs">Pay runs</Link> },
             { key: 'import', icon: <UploadOutlined />, label: <Link to="/import">Import CSV</Link> },
+            { key: 'settings', icon: <SettingOutlined />, label: <Link to="/settings">Settings</Link> },
           ]}
         />
       </Sider>

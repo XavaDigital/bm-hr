@@ -20,9 +20,34 @@ one Cloud Run container. Fleet tenant of bm-identity — see below.
   **No bank or wallet numbers are stored here, ever** — Wise holds them.
 - `audit_log` — every write, with the identity user who did it.
 
-Later phases add leave, pay runs (+ Wise export), onboarding, member events.
-Salaries are USD everywhere; Filipino GCash recipients are paid by grossing up
-the USD source amount (PLAN.md §5).
+## Pay runs (Phase 2, `src/modules/payruns/`)
+
+- `pay_runs` — one per pay date: `draft → exported → paid`. `exported` and
+  `paid` runs are frozen; `reopen` puts an exported run back to draft.
+- `pay_run_lines` — one per person per run, ALL SNAPSHOTS (member name,
+  recipient details, fee model, amounts). net = base + 13th month +
+  adjustments. `export_amount` is what goes in the Wise file: `source` mode
+  = net grossed up by `(net + fee_fixed) / (1 - fee_pct)` rounded UP; `target`
+  mode = net. Arithmetic lives in `calc.ts` (pure, tested); never do money
+  maths elsewhere.
+- Eligibility at creation: status active/onboarding, payout `wise`, schedule
+  frequency = run frequency, start_date ≤ pay date. Current pay is evaluated
+  as of TODAY, not the pay date.
+- 13th month: added once per member per calendar month when the pay date's
+  month = `thirteenth_month_pay_month`, as annual basic / 12.
+- Invoice references: previewed from the schedule sequence while draft;
+  assigned and LOCKED (`payment_reference_manual = true`) at export, and the
+  schedule's `next_invoice_number` advanced. Re-export never burns a number.
+  `invoice_prefix` is NOT trimmed ("INV " is real).
+- `settings` key `wise` (`src/modules/settings/`): source currency, CSV header
+  order (default = docs/wise-template-header.csv), per-kind fee model
+  (`gcash` source/gross-up, `wise_account` target). Changing settings affects
+  new runs and `refresh`ed drafts only.
+- CSV: `GET /api/pay-runs/:id/csv` emits the header from settings; unknown
+  headers are blank, `amountCurrency` is the line's mode, `receiverType`
+  is always PERSON.
+
+Salaries are USD everywhere (PLAN.md §5).
 
 ## Auth — bm-identity, no local policy
 

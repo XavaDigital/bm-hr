@@ -113,12 +113,97 @@ export const paySchedules = hr.table('pay_schedules', {
   targetCurrency: text('target_currency'),
   invoicePrefix: text('invoice_prefix'),
   nextInvoiceNumber: integer('next_invoice_number'),
+  /** Zero-pad width for the reference number (INV0008 = 4, INV022 = 3, INV 104 = 0). */
+  invoicePad: integer('invoice_pad').notNull().default(0),
   thirteenthMonth: boolean('thirteenth_month').notNull().default(false),
   thirteenthMonthPayMonth: integer('thirteenth_month_pay_month').notNull().default(12),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
 export type PaySchedule = typeof paySchedules.$inferSelect;
+
+/** Key/value app settings (e.g. the Wise export configuration). */
+export const settings = hr.table('settings', {
+  key: text('key').primaryKey(),
+  value: jsonb('value').notNull(),
+  updatedBy: text('updated_by'),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const PAY_RUN_STATUSES = ['draft', 'exported', 'paid'] as const;
+export const AMOUNT_MODES = ['source', 'target'] as const;
+
+/**
+ * One pay run per pay date. draft → exported (CSV handed to Wise; lines are
+ * frozen) → paid. Amounts on lines are snapshots so history never shifts.
+ */
+export const payRuns = hr.table(
+  'pay_runs',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    payDate: date('pay_date').notNull(),
+    periodStart: date('period_start'),
+    periodEnd: date('period_end'),
+    frequency: text('frequency').notNull().default('weekly'),
+    sourceCurrency: text('source_currency').notNull().default('USD'),
+    status: text('status').notNull().default('draft'),
+    notes: text('notes'),
+    exportedAt: timestamp('exported_at', { withTimezone: true }),
+    paidAt: timestamp('paid_at', { withTimezone: true }),
+    createdBy: text('created_by'),
+    createdByEmail: text('created_by_email'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index('idx_hr_pay_runs_date').on(t.payDate)],
+);
+
+export type PayRun = typeof payRuns.$inferSelect;
+
+/**
+ * One line per person per run. net = base + 13th month + adjustments (all in
+ * the run's source currency). export_amount is what goes in the Wise file:
+ * in `source` mode it is net grossed up by the fee model so the recipient
+ * receives net after Wise's fee; in `target` mode it is net itself.
+ */
+export const payRunLines = hr.table(
+  'pay_run_lines',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    payRunId: uuid('pay_run_id')
+      .notNull()
+      .references(() => payRuns.id),
+    memberId: uuid('member_id')
+      .notNull()
+      .references(() => teamMembers.id),
+    included: boolean('included').notNull().default(true),
+    memberName: text('member_name').notNull().default(''),
+    baseAmount: numeric('base_amount', { precision: 12, scale: 2 }).notNull().default('0'),
+    thirteenthMonthAmount: numeric('thirteenth_month_amount', { precision: 12, scale: 2 }).notNull().default('0'),
+    adjustmentsAmount: numeric('adjustments_amount', { precision: 12, scale: 2 }).notNull().default('0'),
+    adjustmentsNote: text('adjustments_note'),
+    netAmount: numeric('net_amount', { precision: 12, scale: 2 }).notNull().default('0'),
+    amountMode: text('amount_mode').notNull().default('source'),
+    feeFixed: numeric('fee_fixed', { precision: 12, scale: 2 }).notNull().default('0'),
+    feePct: numeric('fee_pct', { precision: 9, scale: 6 }).notNull().default('0'),
+    grossUpAmount: numeric('gross_up_amount', { precision: 12, scale: 2 }).notNull().default('0'),
+    exportAmount: numeric('export_amount', { precision: 12, scale: 2 }).notNull().default('0'),
+    exportCurrency: text('export_currency').notNull().default('USD'),
+    paymentReference: text('payment_reference'),
+    paymentReferenceManual: boolean('payment_reference_manual').notNull().default(false),
+    recipientId: text('recipient_id'),
+    recipientName: text('recipient_name'),
+    recipientEmail: text('recipient_email'),
+    recipientDetail: text('recipient_detail'),
+    recipientKind: text('recipient_kind'),
+    targetCurrency: text('target_currency'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [uniqueIndex('uq_hr_pay_run_lines_member').on(t.payRunId, t.memberId), index('idx_hr_pay_run_lines_member').on(t.memberId)],
+);
+
+export type PayRunLine = typeof payRunLines.$inferSelect;
 
 /** Every write, with who did it and what changed. */
 export const auditLog = hr.table(

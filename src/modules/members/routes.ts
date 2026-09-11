@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { requireAuth, requireRole } from '../../auth/middleware.js';
 import { MEMBER_STATUSES } from '../../db/schema.js';
 import { importMembersCsv, importTemplateCsv } from './import.js';
+import { payHistory } from '../payruns/service.js';
 import {
   compensationInputSchema,
   importRequestSchema,
@@ -64,6 +65,12 @@ membersRouter.post('/import', async (req, res) => {
 
 membersRouter.get('/:id', async (req, res) => {
   res.json(await getMember(idParam.parse(req.params['id'])));
+});
+
+membersRouter.get('/:id/pay-history', async (req, res) => {
+  const memberId = idParam.parse(req.params['id']);
+  await getMember(memberId); // 404 if unknown
+  res.json({ history: await payHistory(memberId) });
 });
 
 membersRouter.patch('/:id', async (req, res) => {

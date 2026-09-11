@@ -254,8 +254,14 @@ Each phase ends with a deploy and a short walkthrough.
 
 **Phase 1 code is built (2026-09-11):** scaffold, `hr` schema + migration,
 bm-identity login and 60-second re-check, team CRUD, compensation history,
-pay schedules, CSV import, team list and member profile pages. Server tests
-pass; client builds. Not yet deployed.
+pay schedules, CSV import, team list and member profile pages.
+
+**Phase 2 code is built (2026-09-12):** pay runs (draft → exported → paid,
+reopen), lines with 13th month and adjustments, per-kind fee model and
+gross-up, invoice reference sequences, validation, Wise CSV in the
+template's column order, pay history per member, settings page. Server
+tests pass; client builds. Not yet deployed. The gross-up fee numbers start
+at zero and must be calibrated in Settings from a real Wise review screen.
 
 To deploy Phase 1 the owner does the one-time steps in `DEPLOY.md`:
 1. Run `scripts/create-role.sql` on Supabase and store the URL as
@@ -264,7 +270,10 @@ To deploy Phase 1 the owner does the one-time steps in `DEPLOY.md`:
 3. Run the bm-identity onboarding script for app id `hr`.
 4. `npm run db:migrate`, then `npm run deploy`.
 
-Then Phase 2 (pay runs and the Wise export) starts.
+Then: import the team, enter Wise recipient ids from the downloaded
+template, create the first pay run alongside the current manual process,
+compare the CSV against the manual one, and set the fee model from the
+Wise review screen. Phase 3 (leave and dashboard) follows.
 
 Before the first Phase 2 export, note the fee Wise shows for one GCash and
 one Wise-account transfer so the gross-up settings can be calibrated.

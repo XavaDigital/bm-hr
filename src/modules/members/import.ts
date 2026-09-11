@@ -69,8 +69,9 @@ export function importTemplateCsv(): string {
       'gcash',
       'GCash · 639170000000',
       'PHP',
-      'INV',
+      'INV-',
       '1',
+      '4',
       'true',
     ],
   ]);
@@ -138,6 +139,7 @@ function scheduleFields(r: Record<string, string>): Record<string, unknown> | nu
     'target_currency',
     'invoice_prefix',
     'next_invoice_number',
+    'invoice_pad',
     'thirteenth_month',
   ];
   if (!cols.some((c) => blankToUndef(r[c]) !== undefined)) return null;
@@ -156,6 +158,7 @@ function scheduleFields(r: Record<string, string>): Record<string, unknown> | nu
   set('targetCurrency', blankToUndef(r['target_currency']));
   set('invoicePrefix', blankToUndef(r['invoice_prefix']));
   set('nextInvoiceNumber', parseNum(r['next_invoice_number']));
+  set('invoicePad', parseNum(r['invoice_pad']));
   set('thirteenthMonth', parseBool(r['thirteenth_month']));
   return out;
 }

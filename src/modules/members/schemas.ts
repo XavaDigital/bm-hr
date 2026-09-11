@@ -55,8 +55,10 @@ export const payScheduleInputSchema = z.object({
   wiseRecipientKind: z.enum(WISE_RECIPIENT_KINDS).nullable().optional(),
   wiseRecipientDetail: optionalText,
   targetCurrency: z.string().trim().length(3).toUpperCase().nullable().optional().or(z.literal('').transform(() => null)),
-  invoicePrefix: optionalText,
+  /** Not trimmed: the real Wise file uses "INV 104", so a trailing space is meaningful. */
+  invoicePrefix: z.string().max(50).nullable().optional(),
   nextInvoiceNumber: z.number().int().min(0).nullable().optional(),
+  invoicePad: z.number().int().min(0).max(8).default(0),
   thirteenthMonth: z.boolean().default(false),
   thirteenthMonthPayMonth: z.number().int().min(1).max(12).default(12),
 });
@@ -93,6 +95,7 @@ export const IMPORT_COLUMNS = [
   'target_currency',
   'invoice_prefix',
   'next_invoice_number',
+  'invoice_pad',
   'thirteenth_month',
 ] as const;
 export type ImportColumn = (typeof IMPORT_COLUMNS)[number];

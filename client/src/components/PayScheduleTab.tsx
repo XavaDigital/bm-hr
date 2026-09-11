@@ -15,6 +15,7 @@ interface FormShape {
   targetCurrency: string | null;
   invoicePrefix: string | null;
   nextInvoiceNumber: number | null;
+  invoicePad: number;
   thirteenthMonth: boolean;
   thirteenthMonthPayMonth: number;
 }
@@ -49,8 +50,9 @@ export function PayScheduleTab({
     wiseRecipientKind: schedule?.wiseRecipientKind ?? null,
     wiseRecipientDetail: schedule?.wiseRecipientDetail ?? null,
     targetCurrency: schedule?.targetCurrency ?? null,
-    invoicePrefix: schedule?.invoicePrefix ?? 'INV',
+    invoicePrefix: schedule?.invoicePrefix ?? 'INV-',
     nextInvoiceNumber: schedule?.nextInvoiceNumber ?? 1,
+    invoicePad: schedule?.invoicePad ?? 4,
     thirteenthMonth: schedule?.thirteenthMonth ?? member.country === 'PH',
     thirteenthMonthPayMonth: schedule?.thirteenthMonthPayMonth ?? 12,
   };
@@ -161,13 +163,18 @@ export function PayScheduleTab({
               </Form.Item>
             </Col>
             <Col xs={24} md={8}>
-              <Form.Item name="invoicePrefix" label="Payment reference prefix">
-                <Input placeholder="INV" />
+              <Form.Item name="invoicePrefix" label="Payment reference prefix" tooltip="Wise paymentReference = prefix + number, e.g. INV-0176">
+                <Input placeholder="INV-" />
               </Form.Item>
             </Col>
             <Col xs={24} md={8}>
               <Form.Item name="nextInvoiceNumber" label="Next reference number">
                 <InputNumber min={0} style={{ width: '100%' }} />
+              </Form.Item>
+            </Col>
+            <Col xs={24} md={8}>
+              <Form.Item name="invoicePad" label="Zero-pad width" tooltip="4 gives INV-0008; 0 gives INV-8">
+                <InputNumber min={0} max={8} style={{ width: '100%' }} />
               </Form.Item>
             </Col>
           </Row>

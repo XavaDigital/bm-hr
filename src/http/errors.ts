@@ -7,6 +7,7 @@ export class ApiError extends Error {
     public readonly status: number,
     message: string,
     public readonly code?: string,
+    public readonly details?: unknown,
   ) {
     super(message);
     this.name = 'ApiError';
@@ -15,7 +16,11 @@ export class ApiError extends Error {
 
 export function errorHandler(err: unknown, _req: Request, res: Response, _next: NextFunction): void {
   if (err instanceof ApiError) {
-    res.status(err.status).json({ message: err.message, ...(err.code ? { code: err.code } : {}) });
+    res.status(err.status).json({
+      message: err.message,
+      ...(err.code ? { code: err.code } : {}),
+      ...(err.details !== undefined ? { details: err.details } : {}),
+    });
     return;
   }
   if (err instanceof ZodError) {

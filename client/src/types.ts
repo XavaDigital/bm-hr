@@ -59,9 +59,113 @@ export interface PaySchedule {
   targetCurrency: string | null;
   invoicePrefix: string | null;
   nextInvoiceNumber: number | null;
+  invoicePad: number;
   thirteenthMonth: boolean;
   thirteenthMonthPayMonth: number;
 }
+
+export type PayRunStatus = 'draft' | 'exported' | 'paid';
+export type AmountMode = 'source' | 'target';
+
+export interface PayRun {
+  id: string;
+  payDate: string;
+  periodStart: string | null;
+  periodEnd: string | null;
+  frequency: PayFrequency;
+  sourceCurrency: string;
+  status: PayRunStatus;
+  notes: string | null;
+  exportedAt: string | null;
+  paidAt: string | null;
+  createdByEmail: string | null;
+  createdAt: string;
+}
+
+export interface PayRunLine {
+  id: string;
+  payRunId: string;
+  memberId: string;
+  included: boolean;
+  memberName: string;
+  baseAmount: number;
+  thirteenthMonthAmount: number;
+  adjustmentsAmount: number;
+  adjustmentsNote: string | null;
+  netAmount: number;
+  amountMode: AmountMode;
+  feeFixed: number;
+  feePct: number;
+  grossUpAmount: number;
+  exportAmount: number;
+  exportCurrency: string;
+  paymentReference: string | null;
+  paymentReferenceManual: boolean;
+  recipientId: string | null;
+  recipientName: string | null;
+  recipientEmail: string | null;
+  recipientDetail: string | null;
+  recipientKind: WiseRecipientKind | null;
+  targetCurrency: string | null;
+}
+
+export interface LineIssue {
+  lineId: string;
+  memberName: string;
+  level: 'error' | 'warning';
+  message: string;
+}
+
+export interface RunTotals {
+  lines: number;
+  included: number;
+  netAmount: number;
+  exportAmount: number;
+  grossUpAmount: number;
+}
+
+export interface RunView {
+  run: PayRun;
+  lines: PayRunLine[];
+  totals: RunTotals;
+  issues: LineIssue[];
+}
+
+export interface RunSummary {
+  run: PayRun;
+  totals: RunTotals;
+}
+
+export interface PayHistoryEntry {
+  runId: string;
+  payDate: string;
+  periodStart: string | null;
+  periodEnd: string | null;
+  status: PayRunStatus;
+  baseAmount: number;
+  thirteenthMonthAmount: number;
+  adjustmentsAmount: number;
+  adjustmentsNote: string | null;
+  netAmount: number;
+  exportAmount: number;
+  exportCurrency: string;
+  paymentReference: string | null;
+}
+
+export interface FeeModel {
+  amountMode: AmountMode;
+  feeFixed: number;
+  feePct: number;
+}
+
+export interface WiseSettings {
+  sourceCurrency: string;
+  headers: string[];
+  kinds: { gcash: FeeModel; wise_account: FeeModel };
+}
+
+export const RUN_STATUS_LABELS: Record<PayRunStatus, string> = { draft: 'Draft', exported: 'Exported', paid: 'Paid' };
+export const RUN_STATUS_COLOR: Record<PayRunStatus, string> = { draft: 'blue', exported: 'gold', paid: 'green' };
 
 export interface MemberSummary {
   member: TeamMember;
