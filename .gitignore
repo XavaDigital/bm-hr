@@ -1,0 +1,16 @@
+# Wise export downloaded from the live account: contains recipient IDs, emails and wallet numbers.
+# The committed header-only copy is docs/wise-template-header.csv.
+docs/wise-template.csv
+
+node_modules/
+dist/
+# built SPA copied here for local smoke tests; the Docker image builds its own
+/public/
+.env
+.env.*
+!.env.example
+coverage/
+*.log
+
+# local agent permission rules (per-machine, never shared)
+.claude/settings.local.json

@@ -1,0 +1,13 @@
+node_modules
+client/node_modules
+dist
+client/dist
+public
+.git
+.env
+.env.*
+!.env.example
+coverage
+*.log
+docs/wise-template.csv
+.claude

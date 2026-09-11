@@ -1,0 +1,52 @@
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+.page {
+  padding: 24px;
+  max-width: 1200px;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.muted {
+  color: rgba(0, 0, 0, 0.45);
+}
+
+.login-shell {
+  min-height: 100%;
+  display: grid;
+  place-items: center;
+  background: #f5f5f5;
+}
+
+.login-card {
+  background: #fff;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+  width: min(420px, 90vw);
+  text-align: center;
+}
+
+.brand {
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #fff;
+  font-size: 18px;
+  padding: 16px 24px;
+}
+
+.import-table td {
+  vertical-align: top;
+}
