@@ -8,6 +8,8 @@ import { CompensationTab } from '../components/CompensationTab';
 import { PayScheduleTab } from '../components/PayScheduleTab';
 import { PayHistoryTab } from '../components/PayHistoryTab';
 import { LeaveTab } from '../components/LeaveTab';
+import { ChecklistTab } from '../components/ChecklistTab';
+import { NotesTab } from '../components/NotesTab';
 import { date, fullName, pay, sinceRelative, tenure } from '../format';
 import { STATUS_LABELS, type MemberDetail, type TeamMember } from '../types';
 
@@ -123,6 +125,16 @@ export function MemberDetailPage() {
             key: 'leave',
             label: 'Leave',
             children: <LeaveTab member={m} />,
+          },
+          {
+            key: 'checklist',
+            label: 'Onboarding',
+            children: <ChecklistTab member={m} />,
+          },
+          {
+            key: 'notes',
+            label: 'Notes',
+            children: <NotesTab memberId={m.id} compensation={data.compensation} />,
           },
         ]}
       />

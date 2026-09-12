@@ -75,6 +75,29 @@ Salaries are USD everywhere (PLAN.md §5).
   lines, onboarding, negative balances, draft/last pay runs and the next
   Friday as suggested pay date.
 
+## Checklists, notes, digest, backups (Phase 4)
+
+- `checklist_templates` (kind `onboarding|offboarding`, items = `{title,
+  dueDays}` JSON, one default per kind) and `checklist_tasks` per member.
+  Applying a template skips titles already present; due dates count from
+  start date (onboarding) or end date (offboarding). `POST
+  /api/checklists/templates/seed-defaults` creates the two starter
+  templates only when none exist. Dashboard onboarding rows carry
+  `progress {total, done, overdue}`.
+- `member_events` — free-text timeline (`note|review|warning|milestone|other`);
+  the Notes tab merges these with compensation history for display.
+- Digest (`src/modules/digest/`): renders the dashboard as text + HTML and
+  sends via Mailgun's HTTP API (`mail.ts`, env `MAILGUN_API_KEY` +
+  `MAILGUN_DOMAIN`, no SDK). Settings key `digest` = enabled, recipients,
+  subject prefix. `GET /api/digest/preview`, `POST /api/digest/send` (admin,
+  forces), `POST /api/internal/digest` (scheduler, honours enabled).
+- Backups (`src/modules/backup/`): `dumpAll()` = every hr table as JSON.
+  Admin download at `/api/backup/download`; `POST /api/internal/backup`
+  uploads to `BACKUP_BUCKET` through the GCS JSON API using the Cloud Run
+  metadata-server token (`GOOGLE_ACCESS_TOKEN` locally). No SDK.
+- `/api/internal/*` is guarded by `X-Job-Secret` = `INTERNAL_JOB_SECRET`,
+  never by a session (bm-sales pattern). Scheduler setup: DEPLOY.md §8.
+
 ## Auth — bm-identity, no local policy
 
 bm-hr follows `bm-identity/docs/app-access-contract.md` exactly:

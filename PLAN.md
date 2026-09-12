@@ -273,19 +273,30 @@ onboarding, pay-run status). No public-holiday calendar yet: working days
 are Mon–Fri and holidays are recorded as leave of type public_holiday if
 wanted.
 
-To deploy Phase 1 the owner does the one-time steps in `DEPLOY.md`:
+**Phase 4 code is built (2026-09-12):** onboarding and offboarding checklist
+templates (two starter templates seeded on request) applied per person with
+due dates from the start or end date, a notes timeline per person merged
+with pay history, a weekly email digest of the dashboard sent through
+Mailgun and driven by Cloud Scheduler, and backups: a downloadable JSON
+dump plus a nightly upload to a Cloud Storage bucket. Server tests pass;
+client builds. Not yet deployed.
+
+All four planned phases are now built. To deploy, the owner does the
+one-time steps in `DEPLOY.md`:
 1. Run `scripts/create-role.sql` on Supabase and store the URL as
    `bm-hr-database-url`; create `bm-hr-jwt-secret`.
 2. Mint the Google OAuth client id for HR and put it in the deploy script.
 3. Run the bm-identity onboarding script for app id `hr`.
 4. `npm run db:migrate`, then `npm run deploy`.
+5. Job secret, Mailgun key and domain, backup bucket, then the two Cloud
+   Scheduler jobs (DEPLOY.md §6 and §8).
 
 Then: import the team, enter Wise recipient ids from the downloaded
 template, create the first pay run alongside the current manual process,
 compare the CSV against the manual one, and set the fee model from the
 Wise review screen. Enter each person's opening leave balance as an
-adjustment. Phase 4 (onboarding checklists, notes timeline, email digest,
-backups) follows.
+adjustment. Create the starter checklist templates in Settings and turn
+on the digest with your address.
 
 Before the first Phase 2 export, note the fee Wise shows for one GCash and
 one Wise-account transfer so the gross-up settings can be calibrated.

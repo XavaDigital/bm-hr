@@ -51,11 +51,51 @@ DATABASE_URL='<the url from step 1>' npm run db:migrate
 
 Re-run after every new migration file in `drizzle/`.
 
-## 6. Deploy
+## 6. Job secret, Mailgun and backup bucket (once)
+
+```
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))" \
+  | gcloud secrets create bm-hr-job-secret --project beastmode-pm --data-file=-
+printf '%s' '<mailgun api key>' \
+  | gcloud secrets create bm-hr-mailgun-api-key --project beastmode-pm --data-file=-
+gcloud storage buckets create gs://bm-hr-backups --project beastmode-pm \
+  --location asia-southeast1 --uniform-bucket-level-access
+```
+
+Give the Cloud Run service account `roles/storage.objectCreator` on the
+bucket. In `package.json`'s `deploy` script replace `REPLACE_WITH_HR_URL`
+(the service URL) and `REPLACE_WITH_MAILGUN_DOMAIN`. Mailgun is optional:
+without it the digest can be previewed but not sent.
+
+## 7. Deploy
 
 ```
 npm run deploy
 ```
+
+## 8. Scheduled jobs (once, after the first deploy)
+
+Cloud Run scales to zero, so the weekly digest and nightly backup are driven
+by Cloud Scheduler hitting `/api/internal/*` with the `X-Job-Secret` header
+(bm-sales pattern). Times are Manila (Asia/Manila).
+
+```
+URL=$(gcloud run services describe bm-hr --project beastmode-pm --region asia-southeast1 --format 'value(status.url)')
+SECRET=$(gcloud secrets versions access latest --secret bm-hr-job-secret --project beastmode-pm)
+
+gcloud scheduler jobs create http bm-hr-digest --project beastmode-pm --location asia-southeast1 \
+  --schedule "0 8 * * 1" --time-zone Asia/Manila \
+  --uri "$URL/api/internal/digest" --http-method POST \
+  --headers "X-Job-Secret=$SECRET"
+
+gcloud scheduler jobs create http bm-hr-backup --project beastmode-pm --location asia-southeast1 \
+  --schedule "30 2 * * *" --time-zone Asia/Manila \
+  --uri "$URL/api/internal/backup" --http-method POST \
+  --headers "X-Job-Secret=$SECRET"
+```
+
+The digest only sends when it is enabled in Settings with at least one
+recipient. Test either job with `gcloud scheduler jobs run <name>`.
 
 Cloud Run builds the Dockerfile from source, runs at min-instances 0 (scale
 to zero; the app is used a few times a week) and reads `PORT`, the three

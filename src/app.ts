@@ -10,6 +10,11 @@ import { payRunsRouter } from './modules/payruns/routes.js';
 import { settingsRouter } from './modules/settings/routes.js';
 import { leaveRouter, memberLeaveRouter } from './modules/leave/routes.js';
 import { dashboardRouter } from './modules/dashboard/routes.js';
+import { checklistsRouter, memberChecklistRouter } from './modules/checklists/routes.js';
+import { memberEventsRouter } from './modules/events/routes.js';
+import { digestRouter } from './modules/digest/routes.js';
+import { backupRouter } from './modules/backup/routes.js';
+import { internalRouter } from './modules/internal/routes.js';
 import { errorHandler } from './http/errors.js';
 
 /**
@@ -33,10 +38,17 @@ export function createApp(): Express {
   app.use('/api/auth', authRouter);
   app.use('/api/members', membersRouter);
   app.use('/api/members', memberLeaveRouter);
+  app.use('/api/members', memberChecklistRouter);
+  app.use('/api/members', memberEventsRouter);
   app.use('/api/leave', leaveRouter);
   app.use('/api/pay-runs', payRunsRouter);
   app.use('/api/settings', settingsRouter);
   app.use('/api/dashboard', dashboardRouter);
+  app.use('/api/checklists', checklistsRouter);
+  app.use('/api/digest', digestRouter);
+  app.use('/api/backup', backupRouter);
+  // Cloud Scheduler targets (X-Job-Secret), never session-authed.
+  app.use('/api/internal', internalRouter);
 
   // Unknown /api/* paths are a JSON 404, never the SPA shell.
   app.use('/api', (_req, res) => {

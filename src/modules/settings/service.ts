@@ -73,6 +73,33 @@ export async function putLeaveSettings(input: unknown, actor?: Actor): Promise<L
   return value;
 }
 
+export const digestSettingsSchema = z.object({
+  enabled: z.boolean().default(false),
+  recipients: z.array(z.string().trim().email()).max(20).default([]),
+  subjectPrefix: z.string().trim().max(60).default('[BeastMode HR]'),
+});
+export type DigestSettings = z.infer<typeof digestSettingsSchema>;
+export const DEFAULT_DIGEST_SETTINGS: DigestSettings = digestSettingsSchema.parse({});
+
+const DIGEST_KEY = 'digest';
+
+export async function getDigestSettings(): Promise<DigestSettings> {
+  const [row] = await db.select().from(settings).where(eq(settings.key, DIGEST_KEY));
+  if (!row) return DEFAULT_DIGEST_SETTINGS;
+  const parsed = digestSettingsSchema.safeParse(row.value);
+  return parsed.success ? parsed.data : DEFAULT_DIGEST_SETTINGS;
+}
+
+export async function putDigestSettings(input: unknown, actor?: Actor): Promise<DigestSettings> {
+  const value = digestSettingsSchema.parse(input);
+  await db
+    .insert(settings)
+    .values({ key: DIGEST_KEY, value, updatedBy: actor?.email ?? null, updatedAt: new Date() })
+    .onConflictDoUpdate({ target: settings.key, set: { value, updatedBy: actor?.email ?? null, updatedAt: new Date() } });
+  await recordAudit(actor, 'settings', DIGEST_KEY, 'update', value);
+  return value;
+}
+
 const WISE_KEY = 'wise';
 
 export async function getWiseSettings(): Promise<WiseSettings> {

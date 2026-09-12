@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { Alert, Button, Card, Col, Form, Input, InputNumber, Row, Select, Spin, Typography, App as AntApp } from 'antd';
 import { api, describeError } from '../api';
 import { LeaveSettingsCard } from '../components/LeaveSettingsCard';
+import { TemplatesCard } from '../components/TemplatesCard';
+import { BackupCard, DigestCard } from '../components/DigestBackupCards';
 import type { WiseSettings } from '../types';
 
 interface FormShape {
@@ -163,10 +165,15 @@ export function Settings() {
           </Typography.Paragraph>
         </Card>
 
-        <Button type="primary" htmlType="submit" loading={saving}>
-          Save settings
+        <Button type="primary" htmlType="submit" loading={saving} style={{ marginBottom: 24 }}>
+          Save Wise settings
         </Button>
       </Form>
+      <div style={{ maxWidth: 900 }}>
+        <TemplatesCard />
+        <DigestCard />
+        <BackupCard />
+      </div>
     </div>
   );
 }

@@ -181,6 +181,13 @@ export function Dashboard() {
                 <Link to={`/team/${o.memberId}`}>{o.name}</Link>
                 {o.jobTitle && <span className="muted"> · {o.jobTitle}</span>}
                 {o.startDate && <span className="muted"> · starts {date(o.startDate)}</span>}
+                {o.progress ? (
+                  <Tag color={o.progress.overdue ? 'red' : o.progress.done === o.progress.total ? 'green' : 'blue'} style={{ marginLeft: 8 }}>
+                    {o.progress.done}/{o.progress.total} tasks{o.progress.overdue ? `, ${o.progress.overdue} overdue` : ''}
+                  </Tag>
+                ) : (
+                  <Tag style={{ marginLeft: 8 }}>no checklist</Tag>
+                )}
               </span>
             )}
           />

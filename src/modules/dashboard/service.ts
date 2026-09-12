@@ -5,6 +5,7 @@
 import { and, eq, gt, inArray } from 'drizzle-orm';
 import { db } from '../../db/index.js';
 import { payRunLines, payRuns } from '../../db/schema.js';
+import { progressFor, type ChecklistProgress } from '../checklists/service.js';
 import { addDays, completedMonths, type LeaveBalance } from '../leave/calc.js';
 import { balancesFor, isoToday, listRequests, type LeaveRequestView } from '../leave/service.js';
 import { listMembers, type MemberSummary } from '../members/service.js';
@@ -20,7 +21,7 @@ export interface Dashboard {
   birthdays: { memberId: string; name: string; date: string; daysAway: number }[];
   payRiseDue: { memberId: string; name: string; since: string; monthsSince: number; currentPay: string | null; thresholdMonths: number }[];
   thirteenthMonth: { memberId: string; name: string; payMonth: number; estimate: number | null; paidThisYear: boolean }[];
-  onboarding: { memberId: string; name: string; startDate: string | null; jobTitle: string | null }[];
+  onboarding: { memberId: string; name: string; startDate: string | null; jobTitle: string | null; progress: ChecklistProgress | null }[];
   lowLeave: { memberId: string; name: string; available: number }[];
   payRuns: { drafts: RunSummary[]; last: RunSummary | null; suggestedNextPayDate: string; hasRunForSuggested: boolean };
 }
@@ -62,6 +63,13 @@ export async function dashboard(today = isoToday()): Promise<Dashboard> {
     )
       .filter((r) => r.payDate.startsWith(year))
       .map((r) => r.memberId),
+  );
+
+  const onboardingMembers = current.filter((m) => m.member.status === 'onboarding');
+  const progress = await progressFor(
+    onboardingMembers.map((m) => m.member.id),
+    'onboarding',
+    today,
   );
 
   const suggested = nextFriday(today);
@@ -114,9 +122,13 @@ export async function dashboard(today = isoToday()): Promise<Dashboard> {
         estimate: m.currentPay ? Math.round((annual(m.currentPay.amount, m.currentPay.period) / 12) * 100) / 100 : null,
         paidThisYear: thirteenthIds.has(m.member.id),
       })),
-    onboarding: current
-      .filter((m) => m.member.status === 'onboarding')
-      .map((m) => ({ memberId: m.member.id, name: name(m), startDate: m.member.startDate, jobTitle: m.member.jobTitle })),
+    onboarding: onboardingMembers.map((m) => ({
+      memberId: m.member.id,
+      name: name(m),
+      startDate: m.member.startDate,
+      jobTitle: m.member.jobTitle,
+      progress: progress.get(m.member.id) ?? null,
+    })),
     lowLeave: current
       .map((m) => ({ memberId: m.member.id, name: name(m), available: (balances.get(m.member.id) as LeaveBalance | undefined)?.available ?? 0 }))
       .filter((x) => x.available < 0),

@@ -17,7 +17,7 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "client:build": "npm --prefix client run build",
-    "deploy": "gcloud run deploy bm-hr --project beastmode-pm --source . --region asia-southeast1 --platform managed --allow-unauthenticated --port 8080 --min-instances 0 --max-instances 2 --cpu 1 --memory 512Mi --set-secrets DATABASE_URL=bm-hr-database-url:latest,JWT_SECRET=bm-hr-jwt-secret:latest,IDENTITY_API_SECRET=bm-identity-secret-hr:latest --set-env-vars \"NODE_ENV=production,IDENTITY_API_URL=https://bm-identity-414540960371.asia-southeast1.run.app,GOOGLE_LOGIN_CLIENT_ID=REPLACE_WITH_HR_GOOGLE_CLIENT_ID\""
+    "deploy": "gcloud run deploy bm-hr --project beastmode-pm --source . --region asia-southeast1 --platform managed --allow-unauthenticated --port 8080 --min-instances 0 --max-instances 2 --cpu 1 --memory 512Mi --set-secrets DATABASE_URL=bm-hr-database-url:latest,JWT_SECRET=bm-hr-jwt-secret:latest,IDENTITY_API_SECRET=bm-identity-secret-hr:latest,INTERNAL_JOB_SECRET=bm-hr-job-secret:latest,MAILGUN_API_KEY=bm-hr-mailgun-api-key:latest --set-env-vars \"NODE_ENV=production,IDENTITY_API_URL=https://bm-identity-414540960371.asia-southeast1.run.app,GOOGLE_LOGIN_CLIENT_ID=REPLACE_WITH_HR_GOOGLE_CLIENT_ID,APP_BASE_URL=REPLACE_WITH_HR_URL,MAILGUN_DOMAIN=REPLACE_WITH_MAILGUN_DOMAIN,BACKUP_BUCKET=bm-hr-backups\""
   },
   "dependencies": {
     "dotenv": "^17.4.2",

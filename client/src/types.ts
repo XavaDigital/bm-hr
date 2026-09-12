@@ -243,9 +243,68 @@ export interface Dashboard {
   birthdays: { memberId: string; name: string; date: string; daysAway: number }[];
   payRiseDue: { memberId: string; name: string; since: string; monthsSince: number; currentPay: string | null; thresholdMonths: number }[];
   thirteenthMonth: { memberId: string; name: string; payMonth: number; estimate: number | null; paidThisYear: boolean }[];
-  onboarding: { memberId: string; name: string; startDate: string | null; jobTitle: string | null }[];
+  onboarding: { memberId: string; name: string; startDate: string | null; jobTitle: string | null; progress: ChecklistProgress | null }[];
   lowLeave: { memberId: string; name: string; available: number }[];
   payRuns: { drafts: RunSummary[]; last: RunSummary | null; suggestedNextPayDate: string; hasRunForSuggested: boolean };
+}
+
+export type ChecklistKind = 'onboarding' | 'offboarding';
+
+export interface ChecklistTemplateItem {
+  title: string;
+  dueDays: number | null;
+}
+
+export interface ChecklistTemplate {
+  id: string;
+  name: string;
+  kind: ChecklistKind;
+  items: ChecklistTemplateItem[];
+  isDefault: boolean;
+}
+
+export interface ChecklistTask {
+  id: string;
+  memberId: string;
+  kind: ChecklistKind;
+  title: string;
+  dueDate: string | null;
+  doneAt: string | null;
+  doneByEmail: string | null;
+  sortOrder: number;
+}
+
+export interface ChecklistProgress {
+  total: number;
+  done: number;
+  overdue: number;
+}
+
+export interface MemberChecklist {
+  tasks: ChecklistTask[];
+  onboarding: ChecklistProgress;
+  offboarding: ChecklistProgress;
+}
+
+export type EventType = 'note' | 'review' | 'warning' | 'milestone' | 'other';
+
+export interface MemberEvent {
+  id: string;
+  memberId: string;
+  date: string;
+  type: EventType;
+  text: string;
+  createdByEmail: string | null;
+  createdAt: string;
+}
+
+export const EVENT_TYPE_LABELS: Record<EventType, string> = { note: 'Note', review: 'Review', warning: 'Warning', milestone: 'Milestone', other: 'Other' };
+export const EVENT_TYPE_COLOR: Record<EventType, string> = { note: 'default', review: 'blue', warning: 'red', milestone: 'green', other: 'default' };
+
+export interface DigestSettings {
+  enabled: boolean;
+  recipients: string[];
+  subjectPrefix: string;
 }
 
 export const LEAVE_TYPE_LABELS: Record<LeaveType, string> = {

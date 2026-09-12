@@ -272,6 +272,72 @@ export const leaveAdjustments = hr.table(
 
 export type LeaveAdjustment = typeof leaveAdjustments.$inferSelect;
 
+export const CHECKLIST_KINDS = ['onboarding', 'offboarding'] as const;
+
+export interface ChecklistTemplateItem {
+  title: string;
+  /** Days after the start date (onboarding) or end date (offboarding); null = no due date. */
+  dueDays: number | null;
+}
+
+/** Reusable onboarding/offboarding checklists. */
+export const checklistTemplates = hr.table('checklist_templates', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  name: text('name').notNull(),
+  kind: text('kind').notNull().default('onboarding'),
+  items: jsonb('items').$type<ChecklistTemplateItem[]>().notNull().default([]),
+  isDefault: boolean('is_default').notNull().default(false),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+export type ChecklistTemplate = typeof checklistTemplates.$inferSelect;
+
+/** One person's checklist tasks, created from a template or by hand. */
+export const checklistTasks = hr.table(
+  'checklist_tasks',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    memberId: uuid('member_id')
+      .notNull()
+      .references(() => teamMembers.id),
+    kind: text('kind').notNull().default('onboarding'),
+    title: text('title').notNull(),
+    dueDate: date('due_date'),
+    doneAt: timestamp('done_at', { withTimezone: true }),
+    doneByEmail: text('done_by_email'),
+    sortOrder: integer('sort_order').notNull().default(0),
+    templateId: uuid('template_id'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index('idx_hr_checklist_tasks_member').on(t.memberId, t.kind)],
+);
+
+export type ChecklistTask = typeof checklistTasks.$inferSelect;
+
+export const EVENT_TYPES = ['note', 'review', 'warning', 'milestone', 'other'] as const;
+
+/** Free-text timeline per person: notes, reviews, warnings, milestones. */
+export const memberEvents = hr.table(
+  'member_events',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    memberId: uuid('member_id')
+      .notNull()
+      .references(() => teamMembers.id),
+    date: date('date').notNull(),
+    type: text('type').notNull().default('note'),
+    text: text('text').notNull(),
+    createdByEmail: text('created_by_email'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index('idx_hr_member_events_member').on(t.memberId, t.date)],
+);
+
+export type MemberEvent = typeof memberEvents.$inferSelect;
+
 /** Every write, with who did it and what changed. */
 export const auditLog = hr.table(
   'audit_log',
