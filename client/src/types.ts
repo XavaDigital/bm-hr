@@ -164,6 +164,101 @@ export interface WiseSettings {
   kinds: { gcash: FeeModel; wise_account: FeeModel };
 }
 
+export type LeaveType = 'annual' | 'sick' | 'unpaid' | 'public_holiday' | 'other';
+export type LeaveStatus = 'requested' | 'approved' | 'cancelled';
+export type LeaveAccrual = 'front_loaded' | 'monthly';
+
+export interface LeavePolicy {
+  memberId: string;
+  isDefault: boolean;
+  leaveYearStart: string;
+  annualEntitlementDays: number;
+  accrual: LeaveAccrual;
+  carryOverMaxDays: number;
+  sickDays: number | null;
+}
+
+export interface LeaveBalance {
+  yearStart: string;
+  yearEnd: string;
+  carryIn: number;
+  entitlement: number;
+  accruedToDate: number;
+  adjustments: number;
+  taken: number;
+  booked: number;
+  pending: number;
+  available: number;
+  availableAtYearEnd: number;
+  sickTaken: number;
+  sickDays: number | null;
+  unpaidTaken: number;
+}
+
+export interface LeaveRequest {
+  id: string;
+  memberId: string;
+  memberName?: string;
+  type: LeaveType;
+  startDate: string;
+  endDate: string;
+  days: number;
+  status: LeaveStatus;
+  paid: boolean;
+  notes: string | null;
+  createdByEmail: string | null;
+}
+
+export interface LeaveAdjustment {
+  id: string;
+  memberId: string;
+  date: string;
+  days: number;
+  reason: string;
+  createdByEmail: string | null;
+}
+
+export interface MemberLeave {
+  policy: LeavePolicy;
+  balance: LeaveBalance;
+  requests: LeaveRequest[];
+  adjustments: LeaveAdjustment[];
+}
+
+export interface LeaveSettings {
+  leaveYearStart: string;
+  annualEntitlementDays: number;
+  accrual: LeaveAccrual;
+  carryOverMaxDays: number;
+  sickDays: number | null;
+  payRiseDueMonths: number;
+}
+
+export interface Dashboard {
+  today: string;
+  counts: { active: number; onboarding: number; offboardedThisYear: number };
+  upcomingLeave: LeaveRequest[];
+  pendingRequests: LeaveRequest[];
+  anniversaries: { memberId: string; name: string; date: string; years: number; daysAway: number }[];
+  birthdays: { memberId: string; name: string; date: string; daysAway: number }[];
+  payRiseDue: { memberId: string; name: string; since: string; monthsSince: number; currentPay: string | null; thresholdMonths: number }[];
+  thirteenthMonth: { memberId: string; name: string; payMonth: number; estimate: number | null; paidThisYear: boolean }[];
+  onboarding: { memberId: string; name: string; startDate: string | null; jobTitle: string | null }[];
+  lowLeave: { memberId: string; name: string; available: number }[];
+  payRuns: { drafts: RunSummary[]; last: RunSummary | null; suggestedNextPayDate: string; hasRunForSuggested: boolean };
+}
+
+export const LEAVE_TYPE_LABELS: Record<LeaveType, string> = {
+  annual: 'Annual leave',
+  sick: 'Sick',
+  unpaid: 'Unpaid',
+  public_holiday: 'Public holiday',
+  other: 'Other',
+};
+export const LEAVE_TYPE_COLOR: Record<LeaveType, string> = { annual: 'green', sick: 'volcano', unpaid: 'default', public_holiday: 'purple', other: 'blue' };
+export const LEAVE_STATUS_LABELS: Record<LeaveStatus, string> = { requested: 'Requested', approved: 'Approved', cancelled: 'Cancelled' };
+export const LEAVE_STATUS_COLOR: Record<LeaveStatus, string> = { requested: 'gold', approved: 'green', cancelled: 'default' };
+
 export const RUN_STATUS_LABELS: Record<PayRunStatus, string> = { draft: 'Draft', exported: 'Exported', paid: 'Paid' };
 export const RUN_STATUS_COLOR: Record<PayRunStatus, string> = { draft: 'blue', exported: 'gold', paid: 'green' };
 
@@ -177,6 +272,7 @@ export interface MemberSummary {
   nextAnniversary: string | null;
   daysToAnniversary: number | null;
   nextBirthday: string | null;
+  leave?: { available: number; booked: number; pending: number };
 }
 
 export interface MemberDetail extends MemberSummary {

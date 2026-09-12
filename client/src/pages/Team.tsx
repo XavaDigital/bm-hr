@@ -135,6 +135,21 @@ export function Team() {
             sorter: (a, b) => (a.daysToAnniversary ?? 9999) - (b.daysToAnniversary ?? 9999),
           },
           {
+            title: 'Leave',
+            key: 'leave',
+            align: 'right',
+            render: (_, r) =>
+              r.leave ? (
+                <span style={{ color: r.leave.available < 0 ? '#cf1322' : undefined }}>
+                  {r.leave.available}d
+                  {r.leave.pending > 0 && <Tag color="gold" style={{ marginLeft: 6 }}>{r.leave.pending} pending</Tag>}
+                </span>
+              ) : (
+                '—'
+              ),
+            sorter: (a, b) => (a.leave?.available ?? 0) - (b.leave?.available ?? 0),
+          },
+          {
             title: 'Payout',
             key: 'payout',
             render: (_, r) => {

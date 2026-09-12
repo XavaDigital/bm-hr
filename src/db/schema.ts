@@ -205,6 +205,73 @@ export const payRunLines = hr.table(
 
 export type PayRunLine = typeof payRunLines.$inferSelect;
 
+export const LEAVE_ACCRUALS = ['front_loaded', 'monthly'] as const;
+export const LEAVE_TYPES = ['annual', 'sick', 'unpaid', 'public_holiday', 'other'] as const;
+export const LEAVE_STATUSES = ['requested', 'approved', 'cancelled'] as const;
+
+/**
+ * Per-person leave rule. Balance = carry-in + accrued-to-date + adjustments
+ * − approved annual days (see modules/leave/calc.ts). Defaults come from the
+ * `leave` settings key; a row exists only once someone edits it.
+ */
+export const leavePolicies = hr.table('leave_policies', {
+  memberId: uuid('member_id')
+    .primaryKey()
+    .references(() => teamMembers.id),
+  /** MM-DD the leave year starts on. */
+  leaveYearStart: text('leave_year_start').notNull().default('01-01'),
+  annualEntitlementDays: numeric('annual_entitlement_days', { precision: 6, scale: 2 }).notNull().default('10'),
+  accrual: text('accrual').notNull().default('monthly'),
+  carryOverMaxDays: numeric('carry_over_max_days', { precision: 6, scale: 2 }).notNull().default('5'),
+  sickDays: numeric('sick_days', { precision: 6, scale: 2 }),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+export type LeavePolicy = typeof leavePolicies.$inferSelect;
+
+export const leaveRequests = hr.table(
+  'leave_requests',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    memberId: uuid('member_id')
+      .notNull()
+      .references(() => teamMembers.id),
+    type: text('type').notNull().default('annual'),
+    startDate: date('start_date').notNull(),
+    endDate: date('end_date').notNull(),
+    /** Working days, editable (half days allowed). */
+    days: numeric('days', { precision: 6, scale: 2 }).notNull(),
+    status: text('status').notNull().default('approved'),
+    paid: boolean('paid').notNull().default(true),
+    notes: text('notes'),
+    createdByEmail: text('created_by_email'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index('idx_hr_leave_requests_member').on(t.memberId, t.startDate), index('idx_hr_leave_requests_dates').on(t.startDate, t.endDate)],
+);
+
+export type LeaveRequest = typeof leaveRequests.$inferSelect;
+
+/** Manual balance corrections (+/- days), e.g. an opening balance from the old spreadsheet. */
+export const leaveAdjustments = hr.table(
+  'leave_adjustments',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    memberId: uuid('member_id')
+      .notNull()
+      .references(() => teamMembers.id),
+    date: date('date').notNull(),
+    days: numeric('days', { precision: 6, scale: 2 }).notNull(),
+    reason: text('reason').notNull(),
+    createdByEmail: text('created_by_email'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index('idx_hr_leave_adjustments_member').on(t.memberId, t.date)],
+);
+
+export type LeaveAdjustment = typeof leaveAdjustments.$inferSelect;
+
 /** Every write, with who did it and what changed. */
 export const auditLog = hr.table(
   'audit_log',

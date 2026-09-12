@@ -34,7 +34,7 @@ export function Login() {
             const r = await api<{ user: SessionUser }>('/api/auth/google', { method: 'POST', json: { credential } });
             setUser(r.user);
             const from = (location.state as { from?: string } | null)?.from;
-            navigate(from && from !== '/login' ? from : '/team', { replace: true });
+            navigate(from && from !== '/login' ? from : '/', { replace: true });
           } catch (err) {
             setError(describeError(err));
           }
@@ -54,7 +54,7 @@ export function Login() {
     }
   }, [clientId, location.state, navigate, setUser]);
 
-  if (!loading && user) return <Navigate to="/team" replace />;
+  if (!loading && user) return <Navigate to="/" replace />;
 
   return (
     <div className="login-shell">

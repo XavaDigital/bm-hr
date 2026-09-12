@@ -11,6 +11,8 @@ import { Import } from './pages/Import';
 import { PayRuns } from './pages/PayRuns';
 import { PayRunDetail } from './pages/PayRunDetail';
 import { Settings } from './pages/Settings';
+import { Dashboard } from './pages/Dashboard';
+import { Leave } from './pages/Leave';
 
 function RequireAuth({ children }: { children: ReactElement }) {
   const { user, loading } = useAuth();
@@ -38,8 +40,9 @@ export function App() {
           </RequireAuth>
         }
       >
-        <Route index element={<Navigate to="/team" replace />} />
+        <Route index element={<Dashboard />} />
         <Route path="team" element={<Team />} />
+        <Route path="leave" element={<Leave />} />
         <Route path="team/new" element={<MemberNew />} />
         <Route path="team/:id" element={<MemberDetailPage />} />
         <Route path="import" element={<Import />} />

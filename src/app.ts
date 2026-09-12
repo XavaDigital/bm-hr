@@ -8,6 +8,8 @@ import { authRouter } from './auth/routes.js';
 import { membersRouter } from './modules/members/routes.js';
 import { payRunsRouter } from './modules/payruns/routes.js';
 import { settingsRouter } from './modules/settings/routes.js';
+import { leaveRouter, memberLeaveRouter } from './modules/leave/routes.js';
+import { dashboardRouter } from './modules/dashboard/routes.js';
 import { errorHandler } from './http/errors.js';
 
 /**
@@ -30,8 +32,11 @@ export function createApp(): Express {
 
   app.use('/api/auth', authRouter);
   app.use('/api/members', membersRouter);
+  app.use('/api/members', memberLeaveRouter);
+  app.use('/api/leave', leaveRouter);
   app.use('/api/pay-runs', payRunsRouter);
   app.use('/api/settings', settingsRouter);
+  app.use('/api/dashboard', dashboardRouter);
 
   // Unknown /api/* paths are a JSON 404, never the SPA shell.
   app.use('/api', (_req, res) => {

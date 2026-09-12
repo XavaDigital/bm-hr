@@ -10,6 +10,7 @@ import {
 } from '../../db/schema.js';
 import { diffRecords, recordAudit, type Actor } from '../../audit.js';
 import { ApiError } from '../../http/errors.js';
+import { balancesFor } from '../leave/service.js';
 import type { CompensationInput, MemberInput, MemberPatch, PayScheduleInput } from './schemas.js';
 
 // ---------------------------------------------------------------------------
@@ -30,6 +31,8 @@ export interface MemberSummary {
   nextAnniversary: string | null;
   daysToAnniversary: number | null;
   nextBirthday: string | null;
+  /** Present on list responses only. */
+  leave?: { available: number; booked: number; pending: number };
 }
 
 export function toCompensationView(row: Compensation): CompensationView {
@@ -120,7 +123,14 @@ export async function listMembers(opts: { status?: string[] } = {}): Promise<Mem
   const compsBy = new Map<string, Compensation[]>();
   for (const c of comps) compsBy.set(c.memberId, [...(compsBy.get(c.memberId) ?? []), c]);
   const schedBy = new Map(schedules.map((s) => [s.memberId, s]));
-  return members.map((m) => summarise(m, compsBy.get(m.id) ?? [], schedBy.get(m.id) ?? null));
+  const balances = await balancesFor(members);
+  return members.map((m) => {
+    const b = balances.get(m.id);
+    return {
+      ...summarise(m, compsBy.get(m.id) ?? [], schedBy.get(m.id) ?? null),
+      ...(b ? { leave: { available: b.available, booked: b.booked, pending: b.pending } } : {}),
+    };
+  });
 }
 
 async function findMember(id: string): Promise<TeamMember> {

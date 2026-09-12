@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Alert, Button, Card, Col, Form, Input, InputNumber, Row, Select, Spin, Typography, App as AntApp } from 'antd';
 import { api, describeError } from '../api';
+import { LeaveSettingsCard } from '../components/LeaveSettingsCard';
 import type { WiseSettings } from '../types';
 
 interface FormShape {
@@ -75,6 +76,9 @@ export function Settings() {
   return (
     <div className="page">
       <Typography.Title level={3}>Settings</Typography.Title>
+      <div style={{ maxWidth: 900 }}>
+        <LeaveSettingsCard />
+      </div>
       <Form<FormShape> form={form} layout="vertical" initialValues={initial} onFinish={save} style={{ maxWidth: 900 }}>
         <Card title="Wise batch export" style={{ marginBottom: 16 }}>
           <Row gutter={16}>

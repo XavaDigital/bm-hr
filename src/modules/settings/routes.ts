@@ -1,9 +1,17 @@
 import { Router } from 'express';
 import { requireAuth, requireRole } from '../../auth/middleware.js';
-import { getWiseSettings, putWiseSettings } from './service.js';
+import { getLeaveSettings, getWiseSettings, putLeaveSettings, putWiseSettings } from './service.js';
 
 export const settingsRouter = Router();
 settingsRouter.use(requireAuth, requireRole('admin'));
+
+settingsRouter.get('/leave', async (_req, res) => {
+  res.json({ leave: await getLeaveSettings() });
+});
+
+settingsRouter.put('/leave', async (req, res) => {
+  res.json({ leave: await putLeaveSettings(req.body, req.user) });
+});
 
 settingsRouter.get('/wise', async (_req, res) => {
   res.json({ wise: await getWiseSettings() });

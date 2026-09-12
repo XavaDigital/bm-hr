@@ -49,6 +49,32 @@ one Cloud Run container. Fleet tenant of bm-identity — see below.
 
 Salaries are USD everywhere (PLAN.md §5).
 
+## Leave and dashboard (Phase 3, `src/modules/leave/`, `src/modules/dashboard/`)
+
+- `leave_policies` — per-person rule; absent row = the `leave` settings key
+  defaults (`PolicyView.isDefault`). `leave_requests` — type
+  `annual|sick|unpaid|public_holiday|other`, status
+  `requested|approved|cancelled`, decimal `days` (default = Mon–Fri count,
+  editable for half days). `leave_adjustments` — signed corrections, e.g. an
+  opening balance.
+- Balance maths lives ONLY in `leave/calc.ts` (pure, tested): walk past
+  leave years from the start date to build a capped carry-in (negative
+  balances carry uncapped), then this year = carry-in + accrued-to-date +
+  adjustments − approved annual days (taken = past, booked = future).
+  Monthly accrual counts completed months; entitlement is pro-rated by
+  calendar days for a mid-year start. Only `annual` + `paid` + `approved`
+  requests count against the balance.
+- `GET /api/members/:id/leave` and `/api/dashboard` accept `?asOf=YYYY-MM-DD`
+  for deterministic tests and what-if views; everything else uses today.
+- The team list attaches `leave.{available,booked,pending}` per member
+  (three bulk queries, `balancesFor`).
+- Dashboard (`dashboard/service.ts`) is read-only aggregation: leave in the
+  next 30 days, pending requests, anniversaries/birthdays within 30 days,
+  pay-rise-due (months since last rise ≥ `payRiseDueMonths` setting), 13th
+  month due this or next month with a paid-this-year flag from pay-run
+  lines, onboarding, negative balances, draft/last pay runs and the next
+  Friday as suggested pay date.
+
 ## Auth — bm-identity, no local policy
 
 bm-hr follows `bm-identity/docs/app-access-contract.md` exactly:

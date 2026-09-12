@@ -1,5 +1,5 @@
 import { Layout, Menu, Space, Typography, Button } from 'antd';
-import { TeamOutlined, UploadOutlined, LogoutOutlined, DollarOutlined, SettingOutlined } from '@ant-design/icons';
+import { TeamOutlined, UploadOutlined, LogoutOutlined, DollarOutlined, SettingOutlined, HomeOutlined, CalendarOutlined } from '@ant-design/icons';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
@@ -9,13 +9,18 @@ export function Shell() {
   const { user, signOut } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
-  const selected = location.pathname.startsWith('/import')
-    ? 'import'
-    : location.pathname.startsWith('/pay-runs')
-      ? 'pay-runs'
-      : location.pathname.startsWith('/settings')
-        ? 'settings'
-        : 'team';
+  const p = location.pathname;
+  const selected = p.startsWith('/team')
+    ? 'team'
+    : p.startsWith('/leave')
+      ? 'leave'
+      : p.startsWith('/pay-runs')
+        ? 'pay-runs'
+        : p.startsWith('/import')
+          ? 'import'
+          : p.startsWith('/settings')
+            ? 'settings'
+            : 'home';
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
@@ -26,7 +31,9 @@ export function Shell() {
           mode="inline"
           selectedKeys={[selected]}
           items={[
+            { key: 'home', icon: <HomeOutlined />, label: <Link to="/">Today</Link> },
             { key: 'team', icon: <TeamOutlined />, label: <Link to="/team">Team</Link> },
+            { key: 'leave', icon: <CalendarOutlined />, label: <Link to="/leave">Leave</Link> },
             { key: 'pay-runs', icon: <DollarOutlined />, label: <Link to="/pay-runs">Pay runs</Link> },
             { key: 'import', icon: <UploadOutlined />, label: <Link to="/import">Import CSV</Link> },
             { key: 'settings', icon: <SettingOutlined />, label: <Link to="/settings">Settings</Link> },

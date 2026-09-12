@@ -263,6 +263,16 @@ template's column order, pay history per member, settings page. Server
 tests pass; client builds. Not yet deployed. The gross-up fee numbers start
 at zero and must be calibrated in Settings from a real Wise review screen.
 
+**Phase 3 code is built (2026-09-12):** leave policies (defaults in Settings,
+per-person override), leave requests with approval status and half days,
+balance adjustments, balances with monthly or front-loaded accrual and
+capped carry-over, team leave calendar, Leave tab on each profile, leave
+column on the team list, and the dashboard (upcoming leave, pending
+requests, anniversaries and birthdays, pay rises due, 13th month due,
+onboarding, pay-run status). No public-holiday calendar yet: working days
+are Mon–Fri and holidays are recorded as leave of type public_holiday if
+wanted.
+
 To deploy Phase 1 the owner does the one-time steps in `DEPLOY.md`:
 1. Run `scripts/create-role.sql` on Supabase and store the URL as
    `bm-hr-database-url`; create `bm-hr-jwt-secret`.
@@ -273,7 +283,9 @@ To deploy Phase 1 the owner does the one-time steps in `DEPLOY.md`:
 Then: import the team, enter Wise recipient ids from the downloaded
 template, create the first pay run alongside the current manual process,
 compare the CSV against the manual one, and set the fee model from the
-Wise review screen. Phase 3 (leave and dashboard) follows.
+Wise review screen. Enter each person's opening leave balance as an
+adjustment. Phase 4 (onboarding checklists, notes timeline, email digest,
+backups) follows.
 
 Before the first Phase 2 export, note the fee Wise shows for one GCash and
 one Wise-account transfer so the gross-up settings can be calibrated.

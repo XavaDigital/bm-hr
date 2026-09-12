@@ -7,6 +7,7 @@ import { MemberForm, type MemberFormValues } from '../components/MemberForm';
 import { CompensationTab } from '../components/CompensationTab';
 import { PayScheduleTab } from '../components/PayScheduleTab';
 import { PayHistoryTab } from '../components/PayHistoryTab';
+import { LeaveTab } from '../components/LeaveTab';
 import { date, fullName, pay, sinceRelative, tenure } from '../format';
 import { STATUS_LABELS, type MemberDetail, type TeamMember } from '../types';
 
@@ -117,6 +118,11 @@ export function MemberDetailPage() {
             key: 'history',
             label: 'Pay history',
             children: <PayHistoryTab memberId={m.id} />,
+          },
+          {
+            key: 'leave',
+            label: 'Leave',
+            children: <LeaveTab member={m} />,
           },
         ]}
       />
